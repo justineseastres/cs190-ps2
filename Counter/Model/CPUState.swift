@@ -107,7 +107,7 @@ class CPUState {
     }
 
     // Comments regarding canonicalize()....
-    //
+    //2
     // Computes and stores register C from whatever is currently in A and B.
     //
     // This function is unimplemented. I hard-coded in a value that will make the first of the five test cases pass.
