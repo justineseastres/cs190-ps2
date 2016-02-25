@@ -15,6 +15,8 @@
 //
 // http://www.hpmuseum.org/techcpu.htm
 
+import Foundation
+
 typealias Nibble = UInt8 // This should be UInt4, but the smallest width unsigned integer Swift has is UInt8.
 
 typealias Pointer = UInt8 // Also should be UInt4. In any case, we are not currently using this or Status.
@@ -66,7 +68,11 @@ struct Register {
             digits.append(hexChar)
             nibbleIdx -= 1
         }
-        return digits 
+        return digits
+    }
+    
+    mutating func setNibble(index: Int, value: Nibble) {
+        nibbles[index] = value
     }
 }
 
@@ -94,21 +100,9 @@ class CPUState {
         canonicalize()
     }
     
-    // I hope these getters and setters are all I need to do the implementation needed for InputHandler.swift.
-    // Actually, they are probably the wrong primitives and will have to be redone. The right primitives are the ones
-    // in the HP-35 microcode!
-    
-    func getRegisterValue(regId: RegId) -> Register {
-        return registers[regId.rawValue]
-    }
-    
-    func setRegisterValue(regId: RegId, newValue: Register) {
-        registers[regId.rawValue] = newValue
-    }
-
-    // Comments regarding canonicalize()....
-    //2
-    // Computes and stores register C from whatever is currently in A and B.
+    // Computes and stores into register C whatever is currently showing to the user in A and B. Note that it
+    // is possible for canonicalization to fail. For example 123.4567890 99 overflows when canonicalized. When it
+    // fails due to overflow (or underflow), registers A and B are overwritten with overflow (or underflow) values.
     //
     // This function is unimplemented. I hard-coded in a value that will make the first of the five test cases pass.
     //
@@ -120,6 +114,20 @@ class CPUState {
     func canonicalize() {
         let registerC = Register(fromDecimalString: "01000000000002")
         registers[RegId.C.rawValue] = registerC
+    }
+    
+    // Displays positive or negative overflow value
+    func overflow(positive: Bool) {
+        registers[RegId.A.rawValue] = Register(fromDecimalString: positive ? "09999999999099" : "99999999999099")
+        registers[RegId.B.rawValue] = Register(fromDecimalString: "02000000000000")
+        canonicalize()
+    }
+    
+    // Displays underflow value
+    func underflow() {
+        registers[RegId.A.rawValue] = Register(fromDecimalString: "00000000000000")
+        registers[RegId.B.rawValue] = Register(fromDecimalString: "02999999999999")
+        canonicalize()
     }
     
     func decimalStringForRegister(regId: RegId) -> String {
@@ -138,3 +146,4 @@ enum RegId: Int {
     case F = 5 // T (top or trigonemtric) Register
     case M = 6 // Scratchpad (like A and B, but no math)
 }
+Status API Training Shop Blog About Pricing
