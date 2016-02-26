@@ -96,7 +96,8 @@ class CPUState {
         
         registers[RegId.A.rawValue] = registerA
         registers[RegId.B.rawValue] = registerB
-        
+        //      LEARN LATER
+        registers[RegId.C.rawValue] = registerA
         canonicalize()
     }
     
@@ -112,9 +113,69 @@ class CPUState {
     // Make use of the enums RegisterASpecialValues and RegisterBSpecialValues so that you don't have to hard
     // code "2" to mean a decimal point (similarly for the other special values).
     func canonicalize() {
-        let registerC = Register(fromDecimalString: "01000000000002")
-        registers[RegId.C.rawValue] = registerC
+        var registerC = Register()
+        
+        let nibblesA = registers[RegId.A.rawValue].nibbles
+        let nibblesB = registers[RegId.B.rawValue].nibbles
+        
+        let exponentIsPositive = nibblesA[2] != RegisterASpecialValues.Minus.rawValue
+        
+        // Just copy over the mantissa sign
+        registerC.setNibble(13, value: nibblesA[13])
+        
+        // Build up the exponent from register A (already have the sign)
+        // Examine nibbles 1 and 0
+        var exponent = nibblesA[1] * 10 + nibblesA[0]
+        
+        var decimalPosition = 0
+        var leadingDigitPosition = 1
+        
+        var exponentAdjustment = 0
+        
+        for var idx = 12; idx >= 3; idx -= 1 {
+            // do a test to see if register B the decimal point has been found
+            if nibblesB[idx] == 2 {
+                exponentAdjustment += 1
+                break
+            }
+                // if true , break out of the loop
+            else {
+                decimalPosition += 1
+            }
+        }
+        
+        for var idx = 12; idx >= 3; idx -= 1 {
+            if nibblesA[idx] > 0 {
+                leadingDigitPosition += 1
+            }
+            
+            exponentAdjustment = leadingDigitPosition - decimalPosition
+            
+            
+            var finalExponent = 0
+            
+            if !exponentIsPositive {
+                finalExponent += exponent
+            } else {
+                finalExponent += 100 - exponent}
+            
+            //
+            //        if finalExponent > 99 {
+            //                overflow(true)
+            //        } else {
+            //            finalExponent < -99{
+            //                underflow()
+        }
+        
+        //from here you would implement this exponent component, as well as the digit, positive/negative components, and
+        // place this information into Register C.
+        
     }
+    registers[RegId.C.rawValue] = registerC
+    
+    
+    
+    
     
     // Displays positive or negative overflow value
     func overflow(positive: Bool) {
@@ -137,6 +198,7 @@ class CPUState {
     
 }
 
+
 enum RegId: Int {
     case A = 0 // General Purpose (math or scratchpad)
     case B = 1 // General Purpose (math or scratchpad)
@@ -146,4 +208,3 @@ enum RegId: Int {
     case F = 5 // T (top or trigonemtric) Register
     case M = 6 // Scratchpad (like A and B, but no math)
 }
-Status API Training Shop Blog About Pricing
