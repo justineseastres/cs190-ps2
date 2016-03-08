@@ -113,7 +113,8 @@ class CPUState {
     // Make use of the enums RegisterASpecialValues and RegisterBSpecialValues so that you don't have to hard
     // code "2" to mean a decimal point (similarly for the other special values).
     func canonicalize() {
-        var registerC = Register()
+        
+        var registerC = Register(fromDecimalString: "00000000000000")
         
         let nibblesA = registers[RegId.A.rawValue].nibbles
         let nibblesB = registers[RegId.B.rawValue].nibbles
@@ -125,7 +126,7 @@ class CPUState {
         
         // Build up the exponent from register A (already have the sign)
         // Examine nibbles 1 and 0
-        var exponent = nibblesA[1] * 10 + nibblesA[0]
+        var exponent = Int(nibblesA[1] * 10 + nibblesA[0])
         
         var decimalPosition = 0
         var leadingDigitPosition = 1
@@ -157,17 +158,16 @@ class CPUState {
             if !exponentIsPositive {
                 finalExponent += exponent
             } else {
-                finalExponent += 100 - exponent}
+                finalExponent += (100 - exponent)}
             
-            //
+            var newString = nibblesA
+            
             //        if finalExponent > 99 {
             //                overflow(true)
             //        } else {
             //            finalExponent < -99{
             //                underflow()
-        }
-        
-        //from here you would implement this exponent component, as well as the digit, positive/negative components, and
+            //from here you would implement this exponent component, as well as the digit, positive/negative components, and
         // place this information into Register C.
         
     }
@@ -197,6 +197,7 @@ class CPUState {
     }
     
 }
+}
 
 
 enum RegId: Int {
@@ -207,4 +208,4 @@ enum RegId: Int {
     case E = 4 // Z Register
     case F = 5 // T (top or trigonemtric) Register
     case M = 6 // Scratchpad (like A and B, but no math)
-}
+    }
